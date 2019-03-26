@@ -17,7 +17,7 @@ def add_noise(h, sigma=0.2):
 
 class Generator(chainer.Chain):
 
-    def __init__(self, n_hidden, bottom_width=4, ch=512, wscale=0.02):
+    def __init__(self, n_hidden, bottom_width=3, ch=512, wscale=0.02):
         super(Generator, self).__init__()
         self.n_hidden = n_hidden
         self.ch = ch
@@ -30,7 +30,7 @@ class Generator(chainer.Chain):
             self.dc1 = L.Deconvolution2D(ch, ch // 2, 4, 2, 1, initialW=w)
             self.dc2 = L.Deconvolution2D(ch // 2, ch // 4, 4, 2, 1, initialW=w)
             self.dc3 = L.Deconvolution2D(ch // 4, ch // 8, 4, 2, 1, initialW=w)
-            self.dc4 = L.Deconvolution2D(ch // 8, 3, 3, 1, 1, initialW=w)
+            self.dc4 = L.Deconvolution2D(ch // 8, 1, 3, 1, 1, initialW=w)
             self.bn0 = L.BatchNormalization(bottom_width * bottom_width * ch)
             self.bn1 = L.BatchNormalization(ch // 2)
             self.bn2 = L.BatchNormalization(ch // 4)
@@ -53,11 +53,11 @@ class Generator(chainer.Chain):
 
 class Discriminator(chainer.Chain):
 
-    def __init__(self, bottom_width=4, ch=512, wscale=0.02):
+    def __init__(self, bottom_width=3, ch=512, wscale=0.02):
         w = chainer.initializers.Normal(wscale)
         super(Discriminator, self).__init__()
         with self.init_scope():
-            self.c0_0 = L.Convolution2D(3, ch // 8, 3, 1, 1, initialW=w)
+            self.c0_0 = L.Convolution2D(1, ch // 8, 3, 1, 1, initialW=w)
             self.c0_1 = L.Convolution2D(ch // 8, ch // 4, 4, 2, 1, initialW=w)
             self.c1_0 = L.Convolution2D(ch // 4, ch // 4, 3, 1, 1, initialW=w)
             self.c1_1 = L.Convolution2D(ch // 4, ch // 2, 4, 2, 1, initialW=w)

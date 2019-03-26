@@ -48,8 +48,8 @@ def main():
     opt_dis = make_optimizer(dis)
 
     #Get dataset
-    #train, _ = mnist.get_mnist(withlabel=False, ndim=3, scale=255.)
-    train, _ = chainer.datasets.get_cifar10(withlabel=False, scale=255.)
+    train, _ = mnist.get_mnist(withlabel=False, ndim=3, scale=255.)
+    #train, _ = chainer.datasets.get_cifar10(withlabel=False, scale=255.)
     #Setup iterator
     train_iter = iterators.SerialIterator(train, args.batchsize)
     #Setup updater
