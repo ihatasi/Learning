@@ -12,5 +12,6 @@ RUN apt-get update -y && \
     libblas-dev && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-RUN pip3 install --no-cache-dir cupy-cuda92==5.3.0 chainer==5.3.0 matplotlib pandas argparse\
-    chainercv pillow opencv-python
+RUN pip3 install --no-cache-dir cupy-cuda92==5.3.0 chainer==5.3.0\
+    matplotlib==3.0.3 pandas==0.24.1 chainercv==0.12.0\
+    Pillow==5.4.1 opencv-python==4.0.0.21
