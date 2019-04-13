@@ -60,12 +60,12 @@ class DCGANUpdater(chainer.training.updaters.StandardUpdater):
         with chainer.using_config('train', False):
             x_fake = gen(z_noise)
             y_fake = dis(x_fake)
-        #dis_optimizer.update(self.loss_dis, dis, y_fake, y_real)
-        #gen_optimizer.update(self.loss_gen, gen, y_fake)
-        #ser_optimizer.update(self.loss_Ano, ser, x_real, x_fake, y_fake, y_real)
         self.dis_loss = self.loss_dis(dis, y_fake, y_real)
         self.gen_loss = self.loss_gen(gen, y_fake)
-        self.ser_loss = self.loss_Ano(ser, x_real, x_fake, y_fake, y_real)
+        #self.ser_loss = self.loss_Ano(ser, x_real, x_fake, y_fake, y_real)
+        #dis_optimizer.update(self.loss_dis, dis, y_fake, y_real)
+        #gen_optimizer.update(self.loss_gen, gen, y_fake)
+        ser_optimizer.update(self.loss_Ano, ser, x_real, x_fake, y_fake, y_real)
         """update optimizers"""
         #gen_optimizer.target.cleargrads()
         #self.gen_loss.backward()
@@ -75,7 +75,7 @@ class DCGANUpdater(chainer.training.updaters.StandardUpdater):
         #self.dis_loss.backward()
         #dis_optimizer.update()
 
-        ser_optimizer.target.cleargrads()
-        self.ser_loss.backward()
-        ser_optimizer.update()
+        #ser_optimizer.target.cleargrads()
+        #self.ser_loss.backward()
+        #ser_optimizer.update()
 
