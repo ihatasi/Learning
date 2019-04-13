@@ -10,12 +10,12 @@ from PIL import Image
 from chainer import Variable
 
 
-def out_generated_image(gen, dis, ser, valid, out, dst):
+def out_generated_image(gen, dis, ser, valid, out, dst, z_noise):
     @chainer.training.make_extension()
     def make_image(trainer):
         img = valid[0].reshape(28, 28)
         xp = gen.xp
-        z = Variable(xp.asarray(gen.make_hidden(1)))
+        z = z_noise
         with chainer.using_config('train', False):
             x = gen(ser(z))
         x = chainer.backends.cuda.to_cpu(x.data)
