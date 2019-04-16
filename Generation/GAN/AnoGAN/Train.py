@@ -64,7 +64,7 @@ def main():
     valid = [i[0] for i in test if(i[1]==1)]
 
     #ひとつに対して潜在空間座標を探索する．
-    valid = valid[1:2]
+    valid = valid[0:1]
     xp = gen.xp
     z_noise = Variable(xp.asarray(gen.make_hidden(args.batchsize)))
 
