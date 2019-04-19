@@ -1,7 +1,7 @@
 # これは何？
 AnoGANの追試をしたものです．<br>
-AnoGANについては（https://ihatasi.hatenablog.com/entry/2019/04/20/030339）に書いてあるので，ここではプログラムの動かし方について書きます．<br>
-ここではNvidia-dockerを使っています．環境がLearningのDockerファイルに書かれているので，それを実行するか同じ環境を整えてください．
+AnoGANについては（ https://ihatasi.hatenablog.com/entry/2019/04/20/030339 ）に書いてあるので，ここではプログラムの動かし方について書きます．<br>
+ここではNvidia-dockerを使っています．環境が/LearningのDockerファイルに書かれているので，それをBuildするか同じ環境を整えてください．
 # 動かし方
 `python3 Train.py`でDCGANの学習済みモデルを読み込み学習が始まります．<br>
 **このフォルダ内にあるDCGANをまだ動かしていない場合はそちらを先に動かしてください．**
