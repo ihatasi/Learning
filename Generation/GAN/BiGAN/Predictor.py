@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 import Network.mnist_net as Network
 train_valid, test = mnist.get_mnist(withlabel=True, ndim=3, scale=255.)
-test = [i[0] for i in test  if(i[1]==8)] #ラベル1のみを選択
+test = [i[0] for i in test  if(i[1]==7)] #ラベル1のみを選択
 test = test[0:1]
 
 

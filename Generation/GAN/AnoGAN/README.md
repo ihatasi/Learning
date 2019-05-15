@@ -1,5 +1,5 @@
 # これは何？
-AnoGANの追試をしたものです．<br>
+ChainerでAnoGANのプログラムを書いたたものです．<br>
 AnoGANについては（ https://ihatasi.hatenablog.com/entry/2019/04/20/030339 ）に書いてあるので，ここではプログラムの動かし方について書きます．<br>
 ここではNvidia-dockerを使っています．環境が/LearningのDockerファイルに書かれているので，それをBuildするか同じ環境を整えてください．
 # 動かし方
