@@ -1,6 +1,6 @@
 # これは何？
 ChainerによるADGANのプログラムです．
-ADGANについては（https://ihatasi.hatenablog.com/entry/2019/05/16/032530）に書いてあるので，ここではプログラムの動かし方について書きます．<br>
+ADGANについては（ https://ihatasi.hatenablog.com/entry/2019/05/16/032530 ） に書いてあるので，ここではプログラムの動かし方について書きます．<br>
 ここではNvidia-dockerを使っています．環境が/LearningのDockerファイルに書かれているので，
 それをBuildするか同じ環境を整えてください．
 # 動かし方
