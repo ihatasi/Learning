@@ -21,10 +21,23 @@ def main():
     parser.add_argument("--resume", '-r', default='')
     args = parser.parse_args()
 
+class WeightClipping(object):
+    name = 'WeightClipping'
+
+    def __init__(self, threshold):
+        self.threshold = threshold
+    def __call__(self, opt):
+        for param in opt.target.params():
+            xp = chainer.cuda.get_array_module(param.data)
+            param.data = xp.clip(param.data, -self.threshold, self.threshold)
+
     #import .py
     import Updater
     import Visualize
-    import Network.mnist_net as Network
+    if args.dataset == "cifar10":
+        import Network.cifar10_net as Network
+    else:
+        import Network.mnist_net as Network
     #print settings
     print("GPU:{}".format(args.gpu))
     print("epoch:{}".format(args.epoch))
@@ -34,31 +47,36 @@ def main():
     out = os.path.join(args.out, args.dataset)
     #Set up NN
     gen = Network.Generator(n_hidden=args.n_dimz)
-    dis = Network.Discriminator()
+    cri = Network.Critic()
 
     if args.gpu >= 0:
         chainer.backends.cuda.get_device_from_id(args.gpu).use()
         gen.to_gpu()
-        dis.to_gpu()
+        cri.to_gpu()
+
     #Make optimizer
-    def make_optimizer(model, alpha=0.0002, beta1=0.5):
-        optimizer = optimizers.Adam(alpha=alpha, beta1=beta1) #init_lr = alpha
-        optimizer.setup(model)
-        optimizer.add_hook(chainer.optimizer_hooks.WeightDecay(0.0001), 'hook_dec')
-        return optimizer
-    opt_gen = make_optimizer(gen)
-    opt_dis = make_optimizer(dis)
+    opt_gen = chainer.optimizers.RMSprop(5e-5)
+    opt_gen.setup(gen)
+    opt_gen.add_hook(chainer.optimizer.GradientClipping(1))
+
+    opt_cri = chainer.optimizers.RMSprop(5e-5)
+    opt_cri.setup(gen)
+    opt_cri.add_hook(chainer.optimizer.GradientClipping(1))
+    opt_cri.add_hook(WeightClipping(0.01))
 
     #Get dataset
-    train, _ = mnist.get_mnist(withlabel=True, ndim=3, scale=255.)
-    train = [i[0] for i in train if(i[1]==1)] #ラベル1のみを選択
+    if args.dataset == "mnist":
+        train, _ = mnist.get_mnist(withlabel=False, ndim=3, scale=255.)
+    else:
+        train, _ = chainer.datasets.get_cifar10(withlabel=False, scale=255.)
     #Setup iterator
     train_iter = iterators.SerialIterator(train, args.batchsize)
     #Setup updater
-    updater = Updater.DCGANUpdater(
-        models=(gen, dis),
+    updater = Updater.WGANUpdater(
+        models=(gen, cri),
         iterator=train_iter,
-        optimizer={'gen':opt_gen, 'dis':opt_dis},
+        optimizer={'gen':opt_gen, 'cri':opt_cri},
+        n_c = 5,
         device=args.gpu)
 
     #Setup trainer
@@ -73,16 +91,16 @@ def main():
         gen, 'gen_epoch_{.updater.epoch}.npz'),
         trigger=snapshot_interval)
     trainer.extend(extensions.snapshot_object(
-        dis, 'dis_epoch_{.updater.epoch}.npz'),
+        cri, 'cri_epoch_{.updater.epoch}.npz'),
         trigger=snapshot_interval)
     trainer.extend(extensions.LogReport(
         trigger=display_interval))
     trainer.extend(extensions.PrintReport([
-        'epoch', 'gen/loss', 'dis/loss', 'elapsed_time'
+        'epoch', 'iteration', 'gen/loss', 'cri/loss', 'elapsed_time'
     ]), trigger=display_interval)
     trainer.extend(extensions.ProgressBar())
     trainer.extend(Visualize.out_generated_image(
-        gen, dis,
+        gen, cri,
         10, 10, args.seed, args.out, args.dataset),
         trigger=snapshot_interval)
 
