@@ -22,7 +22,7 @@ def out_generated_image(gen, dis, rows, cols, seed, out, dst):
         x = chainer.backends.cuda.to_cpu(x.data)
         np.random.seed()
 
-        x = np.asarray(np.clip(x * 1.0, 0.0, 1.0), dtype=np.uint8)
+        x = np.asarray(np.clip(x * 1, 0.0, 1.0), dtype=np.uint8)
         _, _, H, W = x.shape
         if dst == "mnist":
             x = x.reshape((rows, cols, 1, H, W))
