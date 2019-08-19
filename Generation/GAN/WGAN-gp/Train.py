@@ -37,21 +37,21 @@ def main():
     print('')
     out = os.path.join(args.out, args.dataset)
     #Set up NN
-    generator = Network.DCGANGenerator()
-    discriminator = Network.WGANDiscriminator()
+    gen = Network.DCGANGenerator()
+    dis = Network.WGANDiscriminator()
     
     if args.gpu >= 0:
         chainer.backends.cuda.get_device_from_id(args.gpu).use()
-        generator.to_gpu()
-        discriminator.to_gpu()
+        gen.to_gpu()
+        dis.to_gpu()
 
     #Make optimizer
     def make_optimizer(model, alpha=0.0002, beta1=0.0, beta2=0.9):
         optimizer = chainer.optimizers.Adam(alpha=alpha, beta1=beta1, beta2=beta2)
         optimizer.setup(model)
         return optimizer
-    opt_gen = make_optimizer(generator)
-    opt_dis = make_optimizer(discriminator)
+    opt_gen = make_optimizer(gen)
+    opt_dis = make_optimizer(dis)
 
     #Get dataset
     if args.dataset == "mnist":
@@ -62,9 +62,9 @@ def main():
     train_iter = iterators.SerialIterator(train, args.batchsize)
     #Setup updater
     updater = Updater.WGANUpdater(
-        models=(generator, discriminator),
+        models=(gen, dis),
         iterator=train_iter,
-        optimizer={'opt_gen':opt_gen, 'opt_dis':opt_dis},
+        optimizer={'gen':opt_gen, 'dis':opt_dis},
         n_dis=5,
         lam=10,
         device=args.gpu)
@@ -78,19 +78,19 @@ def main():
         filename='snapshot_iter_{.updater.iteration}.npz'),
         trigger=snapshot_interval)
     trainer.extend(extensions.snapshot_object(
-        generator, 'gen_iter_{.updater.iteration}.npz'),
+        gen, 'gen_iter_{.updater.iteration}.npz'),
         trigger=snapshot_interval)
     trainer.extend(extensions.snapshot_object(
-        discriminator, 'dis_epoch_{.updater.epoch}.npz'),
+        dis, 'dis_iter_{.updater.iter}.npz'),
         trigger=snapshot_interval)
     trainer.extend(extensions.LogReport(
         trigger=display_interval))
     trainer.extend(extensions.PrintReport([
-        'epoch', 'iteration', 'loss_gen', 'loss_dis', 'loss_gp', 'g', 'elapsed_time'
+        'epoch', 'iteration', 'gen/loss', 'dis/loss', 'loss_grad', 'wasserstein_distance', 'elapsed_time'
     ]), trigger=display_interval)
     trainer.extend(extensions.ProgressBar())
     trainer.extend(Visualize.out_generated_image(
-        generator, discriminator,
+        gen, dis,
         10, 10, args.seed, args.out, args.dataset),
         trigger=snapshot_interval)
 

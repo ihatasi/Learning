@@ -16,9 +16,37 @@ class WGANUpdater(chainer.training.updaters.StandardUpdater):
         self.iteration = 0
         super(WGANUpdater, self).__init__(*args, **kwargs)
 
+    def loss_gen(self, gen, y_fake):
+        batchsize = len(y_fake)
+        loss = F.sum(-y_fake)/batchsize
+        chainer.reporter.report({'loss': loss}, gen)
+        return loss
+    def loss_dis(self, dis, y_real, y_fake, x_real, x_fake):
+        batchsize = len(y_fake)
+        xp = dis.xp
+
+        eps = xp.random.uniform(0, 1, size=batchsize)\
+            .astype("f")[:, None, None, None]
+        x_mid = eps * x_real + (1.0 - eps) * x_fake
+
+        y_mid = self.dis(x_mid)
+        grad, = chainer.grad([y_mid], [x_mid], enable_double_backprop=True)
+        grad = F.sqrt(F.batch_l2_norm_squared(grad))
+        loss_grad = self.lam * F.mean_squared_error(grad, 
+            xp.ones_like(grad.data))
+
+        loss = F.sum(-y_real) / batchsize
+        loss += F.sum(y_fake) / batchsize
+        wasserstein_distance = -loss
+        loss += loss_grad
+        chainer.reporter.report({'wasserstein_distance': wasserstein_distance,
+        'loss_grad':loss_grad})
+        chainer.reporter.report({'loss': loss}, dis)
+        return loss
+
     def update_core(self):
-        gen_optimizer = self.get_optimizer('opt_gen')
-        dis_optimizer = self.get_optimizer('opt_dis')
+        gen_optimizer = self.get_optimizer('gen')
+        dis_optimizer = self.get_optimizer('dis')
         xp = self.gen.xp
 
         for i in range(self.n_dis):
@@ -35,35 +63,8 @@ class WGANUpdater(chainer.training.updaters.StandardUpdater):
             y_fake = self.dis(x_fake)
 
             if i == 0:
-                loss_gen = F.sum(-y_fake) / batchsize
-                self.gen.cleargrads()
-                loss_gen.backward()
-                gen_optimizer.update()
-                chainer.reporter.report({'loss_gen': loss_gen})
+                gen_optimizer.update(self.loss_gen, self.gen, y_fake)
             x_fake.unchain_backward()
 
-            eps = xp.random.uniform(0, 1, size=batchsize).astype("f")[:, None, None, None]
-            x_mid = eps * x_real + (1.0 - eps) * x_fake
-
-            #x_mid_v = Variable(x_mid.data)
-            #y_mid = self.dis(x_mid_v)
-            y_mid = self.dis(x_mid)
-            grad, = chainer.grad([y_mid], [x_mid], enable_double_backprop=True)
-            grad = F.sqrt(F.batch_l2_norm_squared(grad))
-            loss_grad = self.lam * F.mean_squared_error(grad, xp.ones_like(grad.data))
-            #dydx = self.dis.differentiable_backward(xp.ones_like(y_mid.data))
-            #dydx = F.sqrt(F.sum(dydx ** 2, axis=(1, 2, 3)))
-            #loss_gp = self.lam * F.mean_squared_error(dydx, xp.ones_like(dydx.data))
-
-            loss_dis = F.sum(-y_real) / batchsize
-            loss_dis += F.sum(y_fake) / batchsize
-            loss_gan = loss_dis + loss_grad
-
-            self.dis.cleargrads()
-            loss_gan.backward()
-            #loss_gp.backward()
-            dis_optimizer.update()
-
-            chainer.reporter.report({'loss_dis': loss_dis})
-            chainer.reporter.report({'loss_gp': loss_grad})
-            chainer.reporter.report({'g': F.mean(grad)})
+            dis_optimizer.update(self.loss_dis, self.dis, 
+                y_real, y_fake, x_real, x_fake)

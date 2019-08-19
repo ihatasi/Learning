@@ -36,7 +36,7 @@ def out_generated_image(gen, dis, rows, cols, seed, out, dst):
 
         preview_dir = '{}/{}/preview'.format(out, dst)
         preview_path = preview_dir +\
-            '/image{:0>4}.png'.format(trainer.updater.epoch)
+            '/iter_{:0>4}.png'.format(trainer.updater.iteration)
         if not os.path.exists(preview_dir):
             os.makedirs(preview_dir)
         Image.fromarray(x).save(preview_path)
