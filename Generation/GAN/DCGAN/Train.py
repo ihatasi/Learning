@@ -24,11 +24,10 @@ def main():
     #import .py
     import Updater
     import Visualize
-    if args.dataset == "cifar10":
-        import Network.cifar10_net as Network
-    else:
+    if args.dataset == "mnist":
         import Network.mnist_net as Network
-    #print settings
+    else:
+        import Network.cifar10_net as Network    #print settings
     print("GPU:{}".format(args.gpu))
     print("epoch:{}".format(args.epoch))
     print("Minibatch_size:{}".format(args.batchsize))

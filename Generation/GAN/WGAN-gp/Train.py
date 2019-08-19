@@ -25,10 +25,10 @@ def main():
     #import .py
     import Updater
     import Visualize
-    if args.dataset == "cifar10":
-        import Network.cifar10_net as Network
-    else:
+    if args.dataset == "mnist":
         import Network.mnist_net as Network
+    else:
+        import Network.cifar10_net as Network
     #print settings
     print("GPU:{}".format(args.gpu))
     print("max_iter:{}".format(args.max_iter))
