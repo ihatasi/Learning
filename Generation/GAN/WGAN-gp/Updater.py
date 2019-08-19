@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+#https://github.com/pfnet-research/chainer-gan-lib/blob/master/wgan_gp/updater.py
 
 import numpy as np
 import chainer
@@ -26,7 +27,7 @@ class WGANUpdater(chainer.training.updaters.StandardUpdater):
             x = []
             for j in range(batchsize):
                 x.append(np.asarray(batch[j]).astype("f"))
-            x_real = Variable(xp.asarray(x))/
+            x_real = Variable(xp.asarray(x))
             y_real = self.dis(x_real)
 
             z = Variable(xp.asarray(self.gen.make_hidden(batchsize)))

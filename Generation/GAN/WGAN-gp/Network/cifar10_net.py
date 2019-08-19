@@ -7,49 +7,6 @@ import chainer.links as L
 from chainer import cuda
 import numpy as np
 
-
-def add_noise(h, sigma=0.2):
-    xp = cuda.get_array_module(h.data)
-    if not chainer.config.train:
-        return h
-    else:
-        return h + sigma * xp.random.randn(*h.data.shape)
-
-
-# differentiable backward functions
-
-def backward_linear(x_in, x, l):
-    y = F.matmul(x, l.W)
-    return y
-
-
-def backward_convolution(x_in, x, l):
-    y = F.deconvolution_2d(x, l.W, None, l.stride, l.pad, (x_in.data.shape[2], x_in.data.shape[3]))
-    return y
-
-
-def backward_deconvolution(x_in, x, l):
-    y = F.convolution_2d(x, l.W, None, l.stride, l.pad)
-    return y
-
-
-def backward_relu(x_in, x):
-    y = (x_in.data > 0) * x
-    return y
-
-
-def backward_leaky_relu(x_in, x, a):
-    y = (x_in.data > 0) * x + a * (x_in.data < 0) * x
-    return y
-
-
-def backward_sigmoid(x_in, g):
-    y = F.sigmoid(x_in)
-    return g * y * (1 - y)
-
-
-# common generators
-
 class DCGANGenerator(chainer.Chain):
     def __init__(self, n_hidden=128, bottom_width=4, ch=512, wscale=0.02,
                  z_distribution="uniform", hidden_activation=F.relu, output_activation=F.sigmoid, use_bn=True):
@@ -128,21 +85,3 @@ class WGANDiscriminator(chainer.Chain):
         self.h6 = F.leaky_relu(self.c3_0(self.h5))
         return self.l4(self.h6)
 
-    def differentiable_backward(self, x):
-        g = backward_linear(self.h6, x, self.l4)
-        g = F.reshape(g, (x.shape[0], 512, 4, 4))
-        g = backward_leaky_relu(self.h6, g, 0.2)
-        g = backward_convolution(self.h5, g, self.c3_0)
-        g = backward_leaky_relu(self.h5, g, 0.2)
-        g = backward_convolution(self.h4, g, self.c3)
-        g = backward_leaky_relu(self.h4, g, 0.2)
-        g = backward_convolution(self.h3, g, self.c2_0)
-        g = backward_leaky_relu(self.h3, g, 0.2)
-        g = backward_convolution(self.h2, g, self.c2)
-        g = backward_leaky_relu(self.h2, g, 0.2)
-        g = backward_convolution(self.h1, g, self.c1_0)
-        g = backward_leaky_relu(self.h1, g, 0.2)
-        g = backward_convolution(self.h0, g, self.c1)
-        g = backward_leaky_relu(self.h0, g, 0.2)
-        g = backward_convolution(self.x, g, self.c0)
-        return g

@@ -13,7 +13,7 @@ def main():
     parser.add_argument("--batchsize", "-b", type=int, default=64)
     parser.add_argument("--max_iter", type=int, default=100000)
     parser.add_argument("--gpu", "-g", type=int, default=0)
-    parser.add_argument("--snapshot_interval", "-s", type=int, default=10000)
+    parser.add_argument("--snapshot_interval", "-s", type=int, default=1000)
     parser.add_argument("--display_interval", "-d", type=int, default=100)
     parser.add_argument("--n_dimz", "-z", type=int, default=256)
     parser.add_argument("--dataset", "-ds", type=str, default="cifar10")
