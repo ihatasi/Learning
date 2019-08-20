@@ -86,7 +86,7 @@ def main():
     # Extensions
     trainer.extend(extensions.dump_graph('wasserstein distance'))
     trainer.extend(extensions.snapshot(
-        'snapshot_epoch_{.updater.epoch}.npz'
+        filename='snapshot_epoch_{.updater.epoch}.npz'
     ), trigger=(args.epoch, 'epoch'))
     trainer.extend(extensions.snapshot_object(
         gen, 'gen_epoch_{.updater.epoch}.npz'),

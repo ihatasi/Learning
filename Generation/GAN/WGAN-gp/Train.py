@@ -37,7 +37,7 @@ def main():
     print('')
     out = os.path.join(args.out, args.dataset)
     #Set up NN
-    gen = Network.DCGANGenerator()
+    gen = Network.DCGANGenerator(n_hidden=args.n_dimz)
     dis = Network.WGANDiscriminator()
     
     if args.gpu >= 0:

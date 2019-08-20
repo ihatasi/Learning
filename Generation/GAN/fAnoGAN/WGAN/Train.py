@@ -61,8 +61,8 @@ def main():
     opt_dis.add_hook(WeightClipping(0.01))
 
     #Get dataset
-    train, _ = mnist.get_mnist(withlabel=False, ndim=3, scale=1.)
-    #train = [i[0] for i in train if(i[1]==1)] #ラベル1のみを選択
+    train, _ = mnist.get_mnist(withlabel=True, ndim=3, scale=1.)
+    train = [i[0] for i in train if(i[1]==1)] #ラベル1のみを選択
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
 
@@ -82,7 +82,7 @@ def main():
     # Extensions
     trainer.extend(extensions.dump_graph('wasserstein distance'))
     trainer.extend(extensions.snapshot(
-        'snapshot_epoch_{.updater.epoch}.npz'
+        filename='snapshot_epoch_{.updater.epoch}.npz'
     ), trigger=(args.epoch, 'epoch'))
     trainer.extend(extensions.snapshot_object(
         gen, 'gen_epoch_{.updater.epoch}.npz'),

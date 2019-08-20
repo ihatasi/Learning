@@ -20,12 +20,20 @@ def main():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--out", "-o", type=str, default="result")
     parser.add_argument("--resume", '-r', default='')
+    parser.add_argument("--PreNet", "-pn", type=str, default="WGAN-gp")
+    parser.add_argument("--Premodel", "-pm", type=str, default="WGAN-gp")    
     args = parser.parse_args()
 
     #import .py
     import Updater
     import Visualize
-    import Network.mnist_net as Network
+    import Network.AE_net as Network
+    #Get Pretrain Net
+    if args.PreNet == "WGAN-gp":
+        import WGAN-gp.Network.mnist_net as PreNetwork
+    else:
+        import WGAN.Network.mnist_net as PreNetwork
+
 
     #print settings
     print("GPU:{}".format(args.gpu))
@@ -35,9 +43,10 @@ def main():
     print('')
     out = os.path.join(args.out, args.dataset)
     #Set up NN
-    gen = Network.DCGANGenerator()
-    dis = Network.WGANDiscriminator()
-    
+    gen = PreNetwork.DCGANGenerator(n_hidden=args.n_dimz)
+    dis = PreNetwork.WGANDiscriminator()
+    enc = Network.AE()
+
     if args.gpu >= 0:
         chainer.backends.cuda.get_device_from_id(args.gpu).use()
         gen.to_gpu()
