@@ -22,9 +22,9 @@ class WeightClipping(object):
 
 def main():
     parser = argparse.ArgumentParser(description='WGAN')
-    parser.add_argument('--batchsize', '-b', type=int, default=100,
+    parser.add_argument('--batchsize', '-b', type=int, default=64,
                         help='Number of images in each mini-batch')
-    parser.add_argument('--epoch', '-e', type=int, default=1000,
+    parser.add_argument('--epoch', '-e', type=int, default=100,
                         help='Number of sweeps over the dataset to train')
     parser.add_argument('--gpu', '-g', type=int, default=0,
                         help='GPU ID (negative value indicates CPU)')
@@ -32,7 +32,7 @@ def main():
                         help='Directory to output the result')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
-    parser.add_argument("--snapshot_interval", "-s", type=int, default=50)
+    parser.add_argument("--snapshot_interval", "-s", type=int, default=10)
     parser.add_argument("--display_interval", "-d", type=int, default=1)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--dataset", "-ds", type=str, default="mnist")
@@ -63,7 +63,7 @@ def main():
     opt_dis.add_hook(WeightClipping(0.01))
 
     #Get dataset
-    train, _ = mnist.get_mnist(withlabel=True, ndim=3, scale=255.)
+    train, _ = mnist.get_mnist(withlabel=True, ndim=3, scale=1.)
     train = [i[0] for i in train if(i[1]==1)] #ラベル1のみを選択
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)

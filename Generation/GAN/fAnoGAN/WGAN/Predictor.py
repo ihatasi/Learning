@@ -7,8 +7,8 @@ from chainer import Variable
 
 
 parser = argparse.ArgumentParser(description="DCGAN")
-parser.add_argument("--n_dimz", "-z", type=int, default=100)
-parser.add_argument("--dataset", "-ds", type=str, default="cifar10")
+parser.add_argument("--n_dimz", "-z", type=int, default=128)
+parser.add_argument("--dataset", "-ds", type=str, default="mnist")
 parser.add_argument("--seed", type=int, default=0)
 args = parser.parse_args()
 

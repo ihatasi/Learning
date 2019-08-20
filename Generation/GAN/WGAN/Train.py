@@ -22,7 +22,7 @@ class WeightClipping(object):
 
 def main():
     parser = argparse.ArgumentParser(description='WGAN')
-    parser.add_argument('--batchsize', '-b', type=int, default=100,
+    parser.add_argument('--batchsize', '-b', type=int, default=64,
                         help='Number of images in each mini-batch')
     parser.add_argument('--epoch', '-e', type=int, default=500,
                         help='Number of sweeps over the dataset to train')

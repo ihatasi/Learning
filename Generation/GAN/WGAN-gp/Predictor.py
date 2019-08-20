@@ -20,7 +20,7 @@ else:
 
 gen = Network.Generator(n_hidden=args.n_dimz)
 gen.to_cpu()
-load_path = 'result/{}/gen_epoch_100.npz'.format(args.dataset)
+load_path = 'result/{}/gen_iter_5000.npz'.format(args.dataset)
 chainer.serializers.load_npz(load_path, gen)
 
 np.random.seed(args.seed)

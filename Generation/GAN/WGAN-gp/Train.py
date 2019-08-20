@@ -15,7 +15,7 @@ def main():
     parser.add_argument("--gpu", "-g", type=int, default=0)
     parser.add_argument("--snapshot_interval", "-s", type=int, default=1000)
     parser.add_argument("--display_interval", "-d", type=int, default=100)
-    parser.add_argument("--n_dimz", "-z", type=int, default=256)
+    parser.add_argument("--n_dimz", "-z", type=int, default=128)
     parser.add_argument("--dataset", "-ds", type=str, default="mnist")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--out", "-o", type=str, default="result")
