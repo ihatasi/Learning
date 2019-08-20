@@ -21,14 +21,17 @@ class DCGANGenerator(chainer.Chain):
             self.dc1=L.Deconvolution2D(None, ch//2, 4, 2, 1)
             self.dc2=L.Deconvolution2D(None, ch//4, 4, 2, 1)
             self.dc3=L.Deconvolution2D(None, 1, 3, 1, 3)
+            self.bn0=L.BatchNormalization(ch//1)
+            self.bn1=L.BatchNormalization(ch//2)
+            self.bn2=L.BatchNormalization(ch//4)
 
     def __call__(self, z, test=False):
         #h = F.relu(self.fc1(z))
         #h = F.reshape(F.sigmoid(self.fc2(h)), (-1, 1, 28, 28))
         h = F.reshape(F.relu(self.l0(z)), (len(z), self.ch, self.bottom_size, self.bottom_size))
-        h = F.relu(self.dc0(h))
-        h = F.relu(self.dc1(h))
-        h = F.relu(self.dc2(h))
+        h = F.relu(self.bn0(self.dc0(h)))
+        h = F.relu(self.bn1(self.dc1(h)))
+        h = F.relu(self.bn2(self.dc2(h)))
         h = F.sigmoid(self.dc3(h))
         return h
     def make_hidden(self, batchsize):

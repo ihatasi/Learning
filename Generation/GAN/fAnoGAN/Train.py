@@ -25,10 +25,8 @@ def main():
     #import .py
     import Updater
     import Visualize
-    if args.dataset == "mnist":
-        import Network.mnist_net as Network
-    else:
-        import Network.cifar10_net as Network
+    import Network.mnist_net as Network
+
     #print settings
     print("GPU:{}".format(args.gpu))
     print("max_epoch:{}".format(args.epoch))

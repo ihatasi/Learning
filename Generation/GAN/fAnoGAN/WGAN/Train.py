@@ -24,7 +24,7 @@ def main():
     parser = argparse.ArgumentParser(description='WGAN')
     parser.add_argument('--batchsize', '-b', type=int, default=64,
                         help='Number of images in each mini-batch')
-    parser.add_argument('--epoch', '-e', type=int, default=100,
+    parser.add_argument('--epoch', '-e', type=int, default=500,
                         help='Number of sweeps over the dataset to train')
     parser.add_argument('--gpu', '-g', type=int, default=0,
                         help='GPU ID (negative value indicates CPU)')
@@ -41,10 +41,8 @@ def main():
     
     out = os.path.join(args.out, args.dataset)
     # Networks
-    if args.dataset == "mnist":
-        import Network.mnist_net as Network
-    else:
-        import Network.cifar10_net as Network
+    import Network.mnist_net as Network
+
     gen = Network.DCGANGenerator(n_hidden=args.n_dimz)
     dis = Network.WGANDiscriminator()
     if args.gpu >= 0:
@@ -63,8 +61,8 @@ def main():
     opt_dis.add_hook(WeightClipping(0.01))
 
     #Get dataset
-    train, _ = mnist.get_mnist(withlabel=True, ndim=3, scale=1.)
-    train = [i[0] for i in train if(i[1]==1)] #ラベル1のみを選択
+    train, _ = mnist.get_mnist(withlabel=False, ndim=3, scale=1.)
+    #train = [i[0] for i in train if(i[1]==1)] #ラベル1のみを選択
 
     train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
 

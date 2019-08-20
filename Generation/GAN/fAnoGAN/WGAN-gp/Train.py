@@ -11,7 +11,7 @@ from chainer.training import extensions
 def main():
     parser = argparse.ArgumentParser(description="WGAN-gp")
     parser.add_argument("--batchsize", "-b", type=int, default=64)
-    parser.add_argument("--epoch", type=int, default=100)
+    parser.add_argument("--epoch", type=int, default=500)
     parser.add_argument("--gpu", "-g", type=int, default=0)
     parser.add_argument("--snapshot_interval", "-s", type=int, default=10)
     parser.add_argument("--display_interval", "-d", type=int, default=1)
@@ -25,10 +25,8 @@ def main():
     #import .py
     import Updater
     import Visualize
-    if args.dataset == "mnist":
-        import Network.mnist_net as Network
-    else:
-        import Network.cifar10_net as Network
+    import Network.mnist_net as Network
+
     #print settings
     print("GPU:{}".format(args.gpu))
     print("max_epoch:{}".format(args.epoch))
