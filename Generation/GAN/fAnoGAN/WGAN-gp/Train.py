@@ -9,12 +9,12 @@ from chainer.training import extensions
 
 
 def main():
-    parser = argparse.ArgumentParser(description="DCGAN")
+    parser = argparse.ArgumentParser(description="WGAN-gp")
     parser.add_argument("--batchsize", "-b", type=int, default=64)
-    parser.add_argument("--max_iter", type=int, default=100000)
+    parser.add_argument("--epoch", type=int, default=1000)
     parser.add_argument("--gpu", "-g", type=int, default=0)
-    parser.add_argument("--snapshot_interval", "-s", type=int, default=1000)
-    parser.add_argument("--display_interval", "-d", type=int, default=100)
+    parser.add_argument("--snapshot_interval", "-s", type=int, default=50)
+    parser.add_argument("--display_interval", "-d", type=int, default=1)
     parser.add_argument("--n_dimz", "-z", type=int, default=256)
     parser.add_argument("--dataset", "-ds", type=str, default="mnist")
     parser.add_argument("--seed", type=int, default=0)
@@ -31,7 +31,7 @@ def main():
         import Network.cifar10_net as Network
     #print settings
     print("GPU:{}".format(args.gpu))
-    print("max_iter:{}".format(args.max_iter))
+    print("max_epoch:{}".format(args.epoch))
     print("Minibatch_size:{}".format(args.batchsize))
     print("Dataset:{}".format(args.dataset))
     print('')
@@ -54,10 +54,9 @@ def main():
     opt_dis = make_optimizer(dis)
 
     #Get dataset
-    if args.dataset == "mnist":
-        train, _ = mnist.get_mnist(withlabel=False, ndim=3, scale=1.)
-    else:
-        train, _ = chainer.datasets.get_cifar10(withlabel=False, scale=1.)
+    train, _ = mnist.get_mnist(withlabel=True, ndim=3, scale=255.)
+    train = [i[0] for i in train if(i[1]==1)] #ラベル1のみを選択
+
     #Setup iterator
     train_iter = iterators.SerialIterator(train, args.batchsize)
     #Setup updater
@@ -70,18 +69,18 @@ def main():
         device=args.gpu)
 
     #Setup trainer
-    trainer = training.Trainer(updater, (args.max_iter, 'iteration'), out=out)
-    snapshot_interval = (args.snapshot_interval, 'iteration')
-    display_interval = (args.display_interval, 'iteration')
+    trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=out)
+    snapshot_interval = (args.snapshot_interval, 'epoch')
+    display_interval = (args.display_interval, 'epoch')
     trainer.extend(
         extensions.snapshot(
-        filename='snapshot_iter_{.updater.iteration}.npz'),
+        filename='snapshot_epoch_{.updater.epoch}.npz'),
         trigger=snapshot_interval)
     trainer.extend(extensions.snapshot_object(
-        gen, 'gen_iter_{.updater.iteration}.npz'),
+        gen, 'gen_epoch_{.updater.epoch}.npz'),
         trigger=snapshot_interval)
     trainer.extend(extensions.snapshot_object(
-        dis, 'dis_iter_{.updater.iteration}.npz'),
+        dis, 'dis_epoch_{.updater.epoch}.npz'),
         trigger=snapshot_interval)
     trainer.extend(extensions.LogReport(
         trigger=display_interval))
