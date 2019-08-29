@@ -50,7 +50,7 @@ def main():
     opt_dis = make_optimizer(dis)
 
     #Get dataset
-    train, _ = mnist.get_mnist(withlabel=True, ndim=3, scale=255.)
+    train, _ = mnist.get_mnist(withlabel=True, ndim=3)
     train = [i[0] for i in train if(i[1]==1)] #ラベル1のみを選択
     #Setup iterator
     train_iter = iterators.SerialIterator(train, args.batchsize)

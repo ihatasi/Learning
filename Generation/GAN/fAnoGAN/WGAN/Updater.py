@@ -46,8 +46,8 @@ class WGANUpdater(training.StandardUpdater):
         x_fake = self.gen(z)
 
         #Critic
-        y_real = self.dis(x_real)
-        y_fake = self.dis(x_fake)
+        y_real,_ = self.dis(x_real)
+        y_fake,_ = self.dis(x_fake)
 
         #Update critic
         dis_optimizer.update(self.loss_dis, self.dis, y_real, y_fake)

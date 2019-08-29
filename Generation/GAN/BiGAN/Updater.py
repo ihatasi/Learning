@@ -44,7 +44,7 @@ class DCGANUpdater(chainer.training.updaters.StandardUpdater):
         enc_optimizer = self.get_optimizer('enc')
 
         batch = self.get_iterator('main').next()
-        x_real = Variable(self.converter(batch, self.device)) / 255.
+        x_real = Variable(self.converter(batch, self.device))
         xp = chainer.backend.get_array_module(x_real.data)
 
         gen, dis, enc = self.gen, self.dis, self.enc
@@ -57,6 +57,7 @@ class DCGANUpdater(chainer.training.updaters.StandardUpdater):
         x_fake = gen(z)
         y_fl, y_fake = dis(x_fake, z)
 
+        """update optimizers"""
         dis_optimizer.update(self.loss_dis, dis, y_fake, y_real)
         gen_optimizer.update(self.loss_gen, gen, y_fake)
         enc_optimizer.update(self.loss_enc, enc, y_real)

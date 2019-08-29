@@ -19,18 +19,19 @@ def main():
     parser.add_argument("--dataset", "-ds", type=str, default="mnist")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--out", "-o", type=str, default="result")
+    parser.add_argument("--method", "-m", type=str, default="ziz")
     parser.add_argument("--resume", '-r', default='')
-    parser.add_argument("--PreNet", "-pn", type=str, default="WGAN-gp")
-    parser.add_argument("--Premodel", "-pm", type=str, default="WGAN-gp")    
+    parser.add_argument("--PreNet", "-pn", type=str, default="WGANgp")
+    parser.add_argument("--Premodel", "-pm", type=int, default=100)    
     args = parser.parse_args()
 
     #import .py
     import Updater
     import Visualize
-    import Network.AE_net as Network
+    import Network.mnist_net as Network
     #Get Pretrain Net
-    if args.PreNet == "WGAN-gp":
-        import WGAN-gp.Network.mnist_net as PreNetwork
+    if args.PreNet == "WGANgp":
+        import WGANgp.Network.mnist_net as PreNetwork
     else:
         import WGAN.Network.mnist_net as PreNetwork
 
@@ -41,16 +42,24 @@ def main():
     print("Minibatch_size:{}".format(args.batchsize))
     print("Dataset:{}".format(args.dataset))
     print('')
-    out = os.path.join(args.out, args.dataset)
+    out = os.path.join(args.out, args.method)
+
     #Set up NN
     gen = PreNetwork.DCGANGenerator(n_hidden=args.n_dimz)
     dis = PreNetwork.WGANDiscriminator()
     enc = Network.AE()
 
+    #Load PreTrain model
+    load_path = '{}/result/mnist/gen_epoch_{}.npz'.format(args.PreNet, args.Premodel)
+    chainer.serializers.load_npz(load_path, gen)
+    load_path = '{}/result/mnist/dis_epoch_{}.npz'.format(args.PreNet, args.Premodel)
+    chainer.serializers.load_npz(load_path, dis)
+
     if args.gpu >= 0:
         chainer.backends.cuda.get_device_from_id(args.gpu).use()
         gen.to_gpu()
         dis.to_gpu()
+        enc.to_gpu()
 
     #Make optimizer
     def make_optimizer(model, alpha=0.0002, beta1=0.0, beta2=0.9):
@@ -59,6 +68,7 @@ def main():
         return optimizer
     opt_gen = make_optimizer(gen)
     opt_dis = make_optimizer(dis)
+    opt_enc = make_optimizer(enc)
 
     #Get dataset
     train, _ = mnist.get_mnist(withlabel=True, ndim=3, scale=1.)
@@ -67,13 +77,20 @@ def main():
     #Setup iterator
     train_iter = iterators.SerialIterator(train, args.batchsize)
     #Setup updater
-    updater = Updater.WGANUpdater(
-        models=(gen, dis),
-        iterator=train_iter,
-        optimizer={'gen':opt_gen, 'dis':opt_dis},
-        n_dis=5,
-        lam=10,
-        device=args.gpu)
+    updater_args={
+        "models":(gen, dis, enc),
+        "iterator":train_iter,
+        "optimizer":{'gen':opt_gen, 'dis':opt_dis, 'enc':opt_enc},
+        "n_dimz":args.n_dimz,
+        "device":args.gpu}
+    if args.method=='izif':
+        updater = Updater.izifUpdater(**updater_args)
+    elif args.method=='izi':
+        updater = Updater.iziUpdater(**updater_args)
+    elif args.method=='ziz':
+        updater = Updater.zizUpdater(**updater_args)
+    else:
+        raise NotImplementedError()
 
     #Setup trainer
     trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=out)
@@ -89,10 +106,13 @@ def main():
     trainer.extend(extensions.snapshot_object(
         dis, 'dis_epoch_{.updater.epoch}.npz'),
         trigger=snapshot_interval)
+    trainer.extend(extensions.snapshot_object(
+        enc, 'enc_epoch_{.updater.epoch}.npz'),
+        trigger=snapshot_interval)
     trainer.extend(extensions.LogReport(
         trigger=display_interval))
     trainer.extend(extensions.PrintReport([
-        'epoch', 'iteration', 'gen/loss', 'dis/loss', 'loss_grad', 'wasserstein_distance', 'elapsed_time'
+        'epoch', 'iteration', 'enc/loss', 'elapsed_time'
     ]), trigger=display_interval)
     trainer.extend(extensions.ProgressBar())
     trainer.extend(Visualize.out_generated_image(

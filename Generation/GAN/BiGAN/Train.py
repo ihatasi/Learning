@@ -52,7 +52,7 @@ def main():
     opt_enc = make_optimizer(enc)
 
     #Get dataset
-    train_valid, test = mnist.get_mnist(withlabel=True, ndim=3, scale=255.)
+    train_valid, test = mnist.get_mnist(withlabel=True, ndim=3)
     train, valid = split_dataset_random(train_valid, 50000, seed=0)
     train = [i[0] for i in train  if(i[1]==1)] #ラベル1のみを選択
     #Setup iterator

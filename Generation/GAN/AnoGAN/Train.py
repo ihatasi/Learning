@@ -58,7 +58,7 @@ def main():
     opt_ser = make_optimizer(ser)
 
     #Get dataset
-    train_valid, test = mnist.get_mnist(withlabel=True, ndim=3, scale=255.)
+    train_valid, test = mnist.get_mnist(withlabel=True, ndim=3)
     train, valid = split_dataset_random(train_valid, 50000, seed=0)
     #valid = [i[0] for i in valid if(i[1]==9)] #ラベル1のみを選択
     valid = [i[0] for i in test if(i[1]==1)]
@@ -71,7 +71,7 @@ def main():
     #Setup iterator
     train_iter = iterators.SerialIterator(valid, args.batchsize)
     #Setup updater
-    updater = Updater.DCGANUpdater(
+    updater = Updater.AnoGANUpdater(
         models=(gen, dis, ser),
         iterator=train_iter,
         optimizer={'gen':opt_gen, 'dis':opt_dis, 'ser':opt_ser},

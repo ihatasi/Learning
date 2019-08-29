@@ -5,12 +5,12 @@ import chainer.functions as F
 from chainer import Variable
 
 
-class DCGANUpdater(chainer.training.updaters.StandardUpdater):
+class ADGANUpdater(chainer.training.updaters.StandardUpdater):
 
     def __init__(self, *args, **kwargs):
         self.gen, self.dis, self.ser = kwargs.pop('models')
         self.z_noise = kwargs.pop('z_noise')
-        super(DCGANUpdater, self).__init__(*args, **kwargs)
+        super(ADGANUpdater, self).__init__(*args, **kwargs)
 
     def loss_dis(self, dis, y_fake, y_real):
         batchsize = len(y_fake)
@@ -49,32 +49,21 @@ class DCGANUpdater(chainer.training.updaters.StandardUpdater):
 
         gen, dis, ser= self.gen, self.dis, self.ser
         batchsize = len(batch)
+        #dis.disable_update() #重み固定処理（Updateしてないので入れなくてよい）
 
-        with chainer.using_config('train', False):
-            y_real = dis(x_real)
-
-        #z_noise = Variable(xp.asarray(gen.make_hidden(batchsize)))
         z_noise = ser(self.z_noise)
-        with chainer.using_config('train', False):
+        """
+        DCGANのTrain時には1バッチに複数枚画像が入っているが，
+        AnoGANのTrain時は1バッチ1枚しかない．
+        同じネットワークを使うためにも以下の処理をしないといけない．
+        """
+        with chainer.using_config('train', False):#for Batchnormalization
+            y_real = dis(x_real)
             x_fake = gen(z_noise)
             y_fake = dis(x_fake)
         self.dis_loss = self.loss_dis(dis, y_fake, y_real)
         self.gen_loss = self.loss_gen(gen, y_fake)
-        #self.ser_loss = self.loss_Ano(ser, x_real, x_fake, y_fake, y_real)
-        #dis_optimizer.update(self.loss_dis, dis, y_fake, y_real)
-        #gen_optimizer.update(self.loss_gen, gen, y_fake)
+        """update optimizers"""
+        #2つのネットワークはどちらも同じLoss関数により更新される
         ser_optimizer.update(self.loss_AD, ser, x_real, x_fake)
         gen_optimizer.update(self.loss_AD, ser, x_real, x_fake)
-        """update optimizers"""
-        #gen_optimizer.target.cleargrads()
-        #self.gen_loss.backward()
-        #gen_optimizer.update()
-
-        #dis_optimizer.target.cleargrads()
-        #self.dis_loss.backward()
-        #dis_optimizer.update()
-
-        #ser_optimizer.target.cleargrads()
-        #self.ser_loss.backward()
-        #ser_optimizer.update()
-

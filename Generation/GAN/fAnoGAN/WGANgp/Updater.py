@@ -29,7 +29,7 @@ class WGANUpdater(chainer.training.updaters.StandardUpdater):
             .astype("f")[:, None, None, None]
         x_mid = eps * x_real + (1.0 - eps) * x_fake
 
-        y_mid = self.dis(x_mid)
+        y_mid,_ = self.dis(x_mid)
         grad, = chainer.grad([y_mid], [x_mid], enable_double_backprop=True)
         grad = F.sqrt(F.batch_l2_norm_squared(grad))
         loss_grad = self.lam * F.mean_squared_error(grad, 
@@ -56,11 +56,11 @@ class WGANUpdater(chainer.training.updaters.StandardUpdater):
             for j in range(batchsize):
                 x.append(np.asarray(batch[j]).astype("f"))
             x_real = Variable(xp.asarray(x))
-            y_real = self.dis(x_real)
+            y_real,_ = self.dis(x_real)
 
             z = Variable(xp.asarray(self.gen.make_hidden(batchsize)))
             x_fake = self.gen(z)
-            y_fake = self.dis(x_fake)
+            y_fake,_ = self.dis(x_fake)
 
             if i == 0:
                 gen_optimizer.update(self.loss_gen, self.gen, y_fake)

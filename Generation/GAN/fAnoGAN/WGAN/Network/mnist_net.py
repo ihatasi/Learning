@@ -55,6 +55,6 @@ class WGANDiscriminator(chainer.Chain):
         #h = self.fc2(h)
         h = F.leaky_relu(self.c0(x))
         h = F.leaky_relu(self.c1(h))
-        h = F.leaky_relu(self.c2(h))
-        h = self.c3(h)
-        return h
+        h0 = F.leaky_relu(self.c2(h))
+        h1 = self.c3(h0)
+        return h1, h0
