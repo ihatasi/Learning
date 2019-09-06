@@ -12,6 +12,8 @@ parser.add_argument("--dataset", "-ds", type=str, default="mnist")
 parser.add_argument("--seed", type=int, default=0)
 parser.add_argument("--PreNet", "-pn", type=str, default="WGANgp")
 parser.add_argument("--method", "-m", type=str, default="ziz")
+parser.add_argument("--epoch", "-e", type=int, default=500)
+parser.add_argument("--Premodel", "-pm", type=int, default=500)    
 args = parser.parse_args()
 
 import Network.mnist_net as Network
@@ -32,11 +34,11 @@ enc = Network.AE()
 gen.to_cpu()
 enc.to_cpu()
 dis.to_cpu()
-load_path = 'result/{}/gen_epoch_100.npz'.format(args.method)
+load_path = 'result/{}/gen_epoch_{}.npz'.format(args.method, args.Premodel)
 chainer.serializers.load_npz(load_path, gen)
-load_path = 'result/{}/enc_epoch_100.npz'.format(args.method)
+load_path = 'result/{}/enc_epoch_{}.npz'.format(args.method, args.epoch)
 chainer.serializers.load_npz(load_path, enc)
-load_path = 'result/{}/dis_epoch_100.npz'.format(args.method)
+load_path = 'result/{}/dis_epoch_{}.npz'.format(args.method, args.Premodel)
 chainer.serializers.load_npz(load_path, dis)
 x_real = np.reshape(test[0],(1, 1, 28, 28))
 k=1
@@ -57,7 +59,7 @@ imgs = np.concatenate((x_real, rec_x), axis=1)
 
 preview_dir = './'
 preview_path = preview_dir +\
-    'pred.png'
+    '{}_pred.png'.format(args.method)
 if not os.path.exists(preview_dir):
     os.makedirs(preview_dir)
 plt.imshow(imgs, cmap='gray')

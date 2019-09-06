@@ -32,7 +32,7 @@ def main():
                         help='Directory to output the result')
     parser.add_argument('--resume', '-r', default='',
                         help='Resume the training from snapshot')
-    parser.add_argument("--snapshot_interval", "-s", type=int, default=10)
+    parser.add_argument("--snapshot_interval", "-s", type=int, default=50)
     parser.add_argument("--display_interval", "-d", type=int, default=1)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--dataset", "-ds", type=str, default="mnist")
@@ -76,7 +76,7 @@ def main():
         device=args.gpu)
     trainer = training.Trainer(updater, (args.epoch, 'epoch'), out=out)
 
-    snapshot_interval = (args.snapshot_interval, 'epoch')
+    snapshot_interval = (args.epoch, 'epoch')
     display_interval = (args.display_interval, 'epoch')
 
     # Extensions
@@ -104,7 +104,7 @@ def main():
     trainer.extend(Visualize.out_generated_image(
         gen, dis,
         10, 10, args.seed, args.out, args.dataset),
-        trigger=snapshot_interval)
+        trigger=display_interval)
     if args.resume:
         chainer.serializers.load_npz(args.resume, trainer)
 

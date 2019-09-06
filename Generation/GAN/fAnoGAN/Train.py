@@ -11,9 +11,9 @@ from chainer.training import extensions
 def main():
     parser = argparse.ArgumentParser(description="WGAN-gp")
     parser.add_argument("--batchsize", "-b", type=int, default=64)
-    parser.add_argument("--epoch", type=int, default=100)
+    parser.add_argument("--epoch", "-e", type=int, default=100)
     parser.add_argument("--gpu", "-g", type=int, default=0)
-    parser.add_argument("--snapshot_interval", "-s", type=int, default=10)
+    parser.add_argument("--snapshot_interval", "-s", type=int, default=50)
     parser.add_argument("--display_interval", "-d", type=int, default=1)
     parser.add_argument("--n_dimz", "-z", type=int, default=128)
     parser.add_argument("--dataset", "-ds", type=str, default="mnist")
@@ -22,7 +22,7 @@ def main():
     parser.add_argument("--method", "-m", type=str, default="ziz")
     parser.add_argument("--resume", '-r', default='')
     parser.add_argument("--PreNet", "-pn", type=str, default="WGANgp")
-    parser.add_argument("--Premodel", "-pm", type=int, default=100)    
+    parser.add_argument("--Premodel", "-pm", type=int, default=500)    
     args = parser.parse_args()
 
     #import .py
@@ -41,6 +41,7 @@ def main():
     print("max_epoch:{}".format(args.epoch))
     print("Minibatch_size:{}".format(args.batchsize))
     print("Dataset:{}".format(args.dataset))
+    print("Method:{}".format(args.method))
     print('')
     out = os.path.join(args.out, args.method)
 
@@ -99,7 +100,7 @@ def main():
     trainer.extend(
         extensions.snapshot(
         filename='snapshot_epoch_{.updater.epoch}.npz'),
-        trigger=snapshot_interval)
+        trigger=(args.epoch, 'epoch'))
     trainer.extend(extensions.snapshot_object(
         gen, 'gen_epoch_{.updater.epoch}.npz'),
         trigger=snapshot_interval)
@@ -116,8 +117,8 @@ def main():
     ]), trigger=display_interval)
     trainer.extend(extensions.ProgressBar())
     trainer.extend(Visualize.out_generated_image(
-        gen, dis,
-        10, 10, args.seed, args.out, args.dataset),
+        gen, enc,
+        10, 10, args.seed, out, args.dataset),
         trigger=snapshot_interval)
 
     if args.resume:

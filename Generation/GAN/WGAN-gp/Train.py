@@ -75,8 +75,8 @@ def main():
     display_interval = (args.display_interval, 'iteration')
     trainer.extend(
         extensions.snapshot(
-        filename='snapshot_iter_{.updater.iteration}.npz'),
-        trigger=snapshot_interval)
+        filename='snapshot_epoch_{.updater.epoch}.npz'),
+        trigger=(args.epoch, 'epoch'))
     trainer.extend(extensions.snapshot_object(
         gen, 'gen_iter_{.updater.iteration}.npz'),
         trigger=snapshot_interval)

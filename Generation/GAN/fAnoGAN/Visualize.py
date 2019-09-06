@@ -9,7 +9,7 @@ from PIL import Image
 from chainer import Variable
 
 
-def out_generated_image(gen, dis, rows, cols, seed, out, dst):
+def out_generated_image(gen, enc, rows, cols, seed, out, dst):
     @chainer.training.make_extension()
     def make_image(trainer):
         np.random.seed(seed)
@@ -17,9 +17,11 @@ def out_generated_image(gen, dis, rows, cols, seed, out, dst):
         xp = gen.xp
         z = Variable(xp.asarray(gen.make_hidden(n_images)))
 
+
         with chainer.using_config('train', False):
             x = gen(z)
-        x = chainer.backends.cuda.to_cpu(x.data)
+            y = gen(enc(x))
+        x = chainer.backends.cuda.to_cpu(y.data)
         np.random.seed()
 
         x = np.asarray(np.clip(x * 255, 0.0, 255.0), dtype=np.uint8)
@@ -36,7 +38,7 @@ def out_generated_image(gen, dis, rows, cols, seed, out, dst):
 
         preview_dir = '{}/{}/preview'.format(out, dst)
         preview_path = preview_dir +\
-            '/iter_{:0>4}.png'.format(trainer.updater.iteration)
+            '/epoch_{:0>4}.png'.format(trainer.updater.epoch)
         if not os.path.exists(preview_dir):
             os.makedirs(preview_dir)
         Image.fromarray(x).save(preview_path)
