@@ -24,7 +24,7 @@ else:
     import WGAN.Network.mnist_net as PreNetwork
 
 train_valid, test = mnist.get_mnist(withlabel=True, ndim=3)
-test = [i[0] for i in test  if(i[1]==1)] #ラベル1のみを選択
+test = [i[0] for i in test  if(i[1]==9)] #ラベル1のみを選択
 test = test[0]
 
 gen = PreNetwork.DCGANGenerator(n_hidden=args.n_dimz)
