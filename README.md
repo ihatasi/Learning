@@ -6,11 +6,11 @@ Nvidia-dockerを利用しています．
 `nvidia-docker build -t chainer5 -f Dockerfile .`
 でビルドした後に，各ディレクトリに置いてある`run.sh`を実行して環境に入ってください．<br>
 ### 現在実装されているもの一覧
-- AE
+#### AE
  - Vanilla AE
  - Convolution AE
  - ACAI
-- GAN
+#### GAN
  - DCGAN
  - AnoGAN
  - ADGAN
