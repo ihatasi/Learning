@@ -21,6 +21,7 @@ def main():
     #import program
     import Updater
     import Evaluator
+    import Visualizer
 
     #print settings
     print("GPU:{}".format(args.gpu))
@@ -32,12 +33,17 @@ def main():
     gpu_id = args.gpu
     max_epoch = args.epoch
 
-    if args.dataset == "mnist":
-        train_val, test = mnist.get_mnist(withlabel=False, ndim=3)
-        import Network.mnist_net as Network
-    else:
-        train_val, test = chainer.datasets.get_cifar10(withlabel=False)
-        import Network.cifar10_net as Network
+    train_val, _ = mnist.get_mnist(withlabel=False, ndim=3)
+    #for visualize
+    _, test = mnist.get_mnist(withlabel=True, ndim=3)
+    label1 = 1
+    label2 = 5
+    test1 = [i[0] for i in test if(i[1]==label1)]
+    test2 = [i[0] for i in test if(i[1]==label2)]
+    test1 = test1[0:5]
+    test2 = test2[5:10]
+
+    import Network.mnist_net as Network
     train, valid = split_dataset_random(train_val, 50000, seed=0)
 
     AE = Network.AE(n_dimz=args.n_dimz)
@@ -71,14 +77,18 @@ def main():
     #    iterator=valid_iter,
     #    target=model,
     #    device=args.gpu))
+    snapshot_interval = (args.snapshot, 'epoch')
+    display_interval = (1, 'epoch')
     trainer.extend(extensions.snapshot_object(AE,
-        filename='AE_snapshot_epoch_{.updater.epoch}.npz'), trigger=(args.snapshot, 'epoch'))
+        filename='AE_snapshot_epoch_{.updater.epoch}.npz'), trigger=snapshot_interval)
     trainer.extend(extensions.snapshot_object(Critic,
-        filename='Critic_snapshot_epoch_{.updater.epoch}.npz'), trigger=(args.snapshot, 'epoch'))
+        filename='Critic_snapshot_epoch_{.updater.epoch}.npz'), trigger=snapshot_interval)
     #trainer.extend(extensions.snapshot_object(optimizer, filename='optimizer_snapshot_epoch_{.updater.epoch}'), trigger=(args.snapshot, 'epoch'))
     trainer.extend(extensions.PrintReport(['epoch', 'Critic_loss',
-        'AE_loss', 'rec_loss']))
+        'AE_loss', 'rec_loss']), trigger=display_interval)
     trainer.extend(extensions.ProgressBar())
+    trainer.extend(Visualizer.out_generated_image(AE, Critic, test1, test2),
+        trigger=display_interval)
     trainer.run()
     del trainer
 

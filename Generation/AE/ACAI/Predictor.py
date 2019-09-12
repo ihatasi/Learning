@@ -65,7 +65,6 @@ def main():
         for j in range(1, 11):#間の座標を出す
             z_itp = np.vstack((z_itp, z1.data+z_diff/10*j))
         for k in range(0,11):#端から座標を移動して画像を出力
-            #print(z_itp[k])
             itp = AE(z_itp[k], z_itp[k], train=False)
             itp_out = (itp.data*255).astype(np.uint8).reshape(28, 28)
             itp_list.append(itp_out)
