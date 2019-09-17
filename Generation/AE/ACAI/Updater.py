@@ -27,11 +27,11 @@ class ACAIUpdater(chainer.training.updaters.StandardUpdater):
 
     def loss_AE(self, x1, x2, y1, y2, dis_c):
         batchsize = len(x1)
-        loss = F.mean_squared_error(x1, y1)
-        loss += F.mean_squared_error(x2, y2)
+        loss = F.sum((x1-y1)**2) / (batchsize*28*28) 
+        loss += F.sum((x2-y2)**2) / (batchsize*28*28)
         rec_loss = loss/2
         loss = rec_loss
-        loss += F.sum(self.lamb*dis_c**2)/batchsize
+        loss += F.sum(self.lamb*(dis_c**2))/batchsize
         chainer.report({'AE_loss': loss, 'rec_loss':rec_loss})
         return loss
 
