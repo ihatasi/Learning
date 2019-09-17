@@ -88,7 +88,7 @@ def main():
         'AE_loss', 'rec_loss']), trigger=display_interval)
     trainer.extend(extensions.ProgressBar())
     trainer.extend(Visualizer.out_generated_image(AE, Critic, test1, test2),
-        trigger=(10, 'epoch'))
+        trigger=(1, 'epoch'))
     trainer.run()
     del trainer
 

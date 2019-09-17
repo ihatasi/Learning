@@ -2,6 +2,7 @@ import chainer
 import chainer.functions as F
 import chainer.links as L
 import random
+import cupy
 
 class AE(chainer.Chain):
 
@@ -19,7 +20,7 @@ class AE(chainer.Chain):
     def __call__(self, x1, x2, train=True):
         if train:
             batchsize = x1.shape[0]
-            xp = chainer.backend.get_array_module(x1.data)
+            xp = cupy
             self.alpha = xp.random.rand(batchsize)
             self.alpha = xp.vstack((self.alpha, self.alpha)).T
             h1 = self.conv1(x1)
