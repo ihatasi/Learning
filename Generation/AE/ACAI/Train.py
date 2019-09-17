@@ -14,7 +14,7 @@ def main():
     parser.add_argument("--epoch", "-e", type=int, default=100)
     parser.add_argument("--gpu", "-g", type=int, default=0)
     parser.add_argument("--snapshot", "-s", type=int, default=10)
-    parser.add_argument("--n_dimz", "-z", type=int, default=64)
+    parser.add_argument("--n_dimz", "-z", type=int, default=2)
     parser.add_argument("--dataset", "-d", type=str, default='mnist')
 
     args = parser.parse_args()

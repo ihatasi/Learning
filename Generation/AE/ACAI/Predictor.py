@@ -10,7 +10,7 @@ def main():
     parser = argparse.ArgumentParser(description="Vanilla_AE")
     parser.add_argument("--batchsize", "-b", type=int, default=128)
     parser.add_argument("--gpu", "-g", type=int, default=0)
-    parser.add_argument("--snapshot", "-s", type=int, default=100)
+    parser.add_argument("--snapshot", "-s", type=int, default=500)
     parser.add_argument("--n_dimz", "-z", type=int, default=64)
 
     args = parser.parse_args()
@@ -45,7 +45,7 @@ def main():
     chainer.serializers.load_npz(load_AE, AE)
     chainer.serializers.load_npz(load_Critic, Critic)
     label1 = 1
-    label2 = 5
+    label2 = 7
     test1 = [i[0] for i in test if(i[1]==label1)]
     test2 = [i[0] for i in test if(i[1]==label2)]
     test1 = test1[0:5]

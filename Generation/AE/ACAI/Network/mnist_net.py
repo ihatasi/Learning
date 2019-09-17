@@ -18,7 +18,10 @@ class AE(chainer.Chain):
 
     def __call__(self, x1, x2, train=True):
         if train:
-            self.alpha = random.random()
+            batchsize = x1.shape[0]
+            xp = chainer.backend.get_array_module(x1.data)
+            self.alpha = xp.random.rand(batchsize)
+            self.alpha = xp.vstack((self.alpha, self.alpha)).T
             h1 = self.conv1(x1)
             h2 = self.conv1(x2)
             h1 = self.z(h1)
