@@ -16,9 +16,8 @@ class ACAIUpdater(chainer.training.updaters.StandardUpdater):
     def loss_Critic(self, dis_c, alpha, dis_y1, dis_y2):
         xp = chainer.backend.get_array_module(dis_c.data)
         batchsize = len(dis_c)
-        # alpha = xp.full(batchsize, alpha, dtype=xp.float32).reshape(batchsize, 1)
-        alpha = alpha[:, 0:1]
-        loss = F.sum((dis_c-alpha)**2) / batchsize
+        #alpha = alpha[:, 0:1]
+        loss = F.sum((F.squeeze(dis_c)-F.squeeze(alpha))**2) / batchsize
         loss_ = F.sum(dis_y1**2) / batchsize
         loss_ += F.sum(dis_y2**2) / batchsize
         loss += loss_/2
@@ -31,7 +30,7 @@ class ACAIUpdater(chainer.training.updaters.StandardUpdater):
         loss += F.sum((x2-y2)**2) / (batchsize*28*28)
         rec_loss = loss/2
         loss = rec_loss
-        loss += F.sum(self.lamb*(dis_c**2))/batchsize
+        loss += self.lamb*F.sum(dis_c**2)/batchsize
         chainer.report({'AE_loss': loss, 'rec_loss':rec_loss})
         return loss
 

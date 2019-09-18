@@ -44,7 +44,7 @@ def out_generated_image(AE, Critic, test1, test2):
                 z_itp = xp.vstack((z_itp, z1.data+z_diff/10*j))
             for k in range(0,11):#端から座標を移動して画像を出力
                 with chainer.using_config('train', False):
-                    itp = AE(z_itp[k], z_itp[k], train=False)
+                    itp = AE(xp.copy(z_itp[k][None, ...]), None, train=False)
                     itp = chainer.backends.cuda.to_cpu(itp.data)
                 itp_out = (itp*255).astype(np.uint8).reshape(28, 28)
                 itp_list.append(itp_out)
