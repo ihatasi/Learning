@@ -42,7 +42,6 @@ load_path = 'result/{}/dis_epoch_{}.npz'.format(args.method, args.epoch)
 chainer.serializers.load_npz(load_path, dis)
 x_real = np.reshape(test[0],(1, 1, 28, 28))
 k=1
-ch = 512
 with chainer.using_config('train', False):
     enc_z = enc(x_real)
     rec_x = gen(enc_z)
@@ -51,7 +50,7 @@ with chainer.using_config('train', False):
     _,f_rec_x = dis(rec_x)
 
     L1 = F.mean_squared_error(x_real, rec_x)
-    L2 = F.mean_squared_error(f_x, f_rec_x)/ch
+    L2 = F.mean_squared_error(f_x, f_rec_x)
     if args.method == "izif":
         A_score = L1.data + k*L2.data
     else:

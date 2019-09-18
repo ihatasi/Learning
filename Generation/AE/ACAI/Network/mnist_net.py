@@ -24,7 +24,8 @@ class AE(chainer.Chain):
         if train:
             batchsize = x1.shape[0]
             xp = cupy
-            alpha = chainer.Variable(xp.random.rand(batchsize, dtype=xp.float32)/2)
+            alpha = chainer.Variable(xp.random.rand(batchsize, dtype=xp.float32))
+            alpha = 0.5 - F.absolute(0.5 - alpha)
             alpha = alpha.reshape(batchsize, 1, 1 ,1)
             h1 = F.relu(self.conv0(x1))
             h2 = F.relu(self.conv0(x2))

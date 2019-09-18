@@ -17,7 +17,7 @@ def main():
     args = parser.parse_args()
     os.makedirs('Pred', exist_ok=True)
 
-    def plot_mnist_data(samples):
+    def plot_mnist_data(samples, label1, label2):
         for index, data in enumerate(samples):#(配列番号，要素)
             plt.subplot(5, 13, index + 1)#(行数, 列数, 何番目のプロットか)
             plt.axis('off')#軸はoff
@@ -30,7 +30,7 @@ def main():
                 plt.title("out_1", color='red')
             elif index == 11:
                 plt.title("out_2", color='red')
-        plt.savefig("Pred/epoch_{}.png".format(args.snapshot))
+        plt.savefig("Pred/{}_{}_epoch_{}.png".format(label1, label2, args.snapshot))
         plt.show()
 
     batchsize = args.batchsize
@@ -47,7 +47,7 @@ def main():
     chainer.serializers.load_npz(load_AE, AE)
     chainer.serializers.load_npz(load_Critic, Critic)
     label1 = 1
-    label2 = 9
+    label2 = 0
     test1 = [i[0] for i in test if(i[1]==label1)]
     test2 = [i[0] for i in test if(i[1]==label2)]
     test1 = test1[0:5]
@@ -72,7 +72,7 @@ def main():
             itp_list.append(chainer.cuda.to_cpu(itp_out))
         itp_list.append(in2)
 
-    plot_mnist_data(itp_list)
+    plot_mnist_data(itp_list, label1, label2)
 
 
 if __name__ == '__main__':

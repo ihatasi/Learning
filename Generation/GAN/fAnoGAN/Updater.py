@@ -14,7 +14,7 @@ class zizUpdater(chainer.training.updaters.StandardUpdater):
         super(zizUpdater, self).__init__(*args, **kwargs)
 
     def loss_enc(self, enc, z, re_z):
-        loss = F.mean_squared_error(z, re_z)/self.n_dimz
+        loss = F.mean_squared_error(z, re_z)
         chainer.report({'loss': loss}, enc)
         return loss
 
@@ -81,10 +81,9 @@ class izifUpdater(chainer.training.updaters.StandardUpdater):
         super(izifUpdater, self).__init__(*args, **kwargs)
 
     def loss_enc(self, enc, x_real, re_x, f_x, f_re_x):
-        ch = 512
         k=1
         loss = F.mean_squared_error(x_real, re_x)
-        loss += F.mean_squared_error(f_x, f_re_x) / ch
+        loss += F.mean_squared_error(f_x, f_re_x)
         chainer.report({'loss': loss}, enc)
         return loss
 
