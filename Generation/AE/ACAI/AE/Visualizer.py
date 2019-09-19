@@ -7,7 +7,7 @@ from chainer import Variable
 import matplotlib.pyplot as plt
 import cupy
 
-def out_generated_image(AE, Critic, test1, test2, out):
+def out_generated_image(AE, test1, test2, out):
     @chainer.training.make_extension()
     def plot_mnist_data(samples, trainer, out):
         pict = os.path.join(out, 'pict')
@@ -34,7 +34,7 @@ def out_generated_image(AE, Critic, test1, test2, out):
             data1 = test1[i]
             data2 = test2[i]
             with chainer.using_config('train', False):
-                y1, y2, yc, alpha, z1, z2 = AE(xp.array([data1]).astype(np.float32),
+                y1, y2, z1, z2 = AE(xp.array([data1]).astype(np.float32),
                     xp.array([data2]).astype(np.float32))
             in1 = (data1*255).astype(np.uint8).reshape(32, 32)
             in2 = (data2*255).astype(np.uint8).reshape(32, 32)

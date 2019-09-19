@@ -1,11 +1,8 @@
 # これは何
-(https://arxiv.org/abs/1807.07543)の論文内のACAIのChainerでのテスト実装です．
-## 使い方
-1. Train.pyを実行
-2. Predictor.pyを実行
+ACAIと比較するためのVanilla AEです．
+ACAIからCriticを抜き取ったプログラムになっています．  
 
-Predicotor.pyを実行するとpictフォルダ内の画像が生成されます．
-必要があれば自分の使いやすいように書き換えたり，オプションをつけてください．
+
 ネットワークはFull Convolutionの`mnist_conv.py`とLatent Spaceが全結合の`mnist_fl.py`があり，
 オプションから選択可能です(`-n {conv, fl}`)．
 ### オプション
@@ -16,4 +13,3 @@ Predicotor.pyを実行するとpictフォルダ内の画像が生成されます
 `"--n_dimz", "-z", type=int, default=16`
 `"--dataset", "-d", type=str, default='mnist'`
 `"--network", "-n", type=str, default='conv'`
-

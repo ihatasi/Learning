@@ -65,7 +65,6 @@ def main():
         raise Exception('Error!')
 
     AE = Network.AE(n_dimz=args.n_dimz, batchsize=args.batchsize)
-    Critic = Network.Critic()
     train, valid = split_dataset_random(train_val, 50000, seed=0)
 
     #set iterator
@@ -79,12 +78,11 @@ def main():
         optimizer.add_hook(chainer.optimizer.WeightDecay(0.0001))
         return optimizer
     opt_AE = make_optimizer(AE)
-    opt_Critic = make_optimizer(Critic) 
     #trainer
-    updater = Updater.ACAIUpdater(
-    model=(AE, Critic),
+    updater = Updater.AEUpdater(
+    model=(AE),
     iterator=train_iter,
-    optimizer={'AE':opt_AE, 'Critic':opt_Critic},
+    optimizer={'AE':opt_AE},
     device=args.gpu)
 
 
@@ -95,12 +93,10 @@ def main():
     display_interval = (1, 'epoch')
     trainer.extend(extensions.snapshot_object(AE,
         filename='AE_snapshot_epoch_{.updater.epoch}.npz'), trigger=snapshot_interval)
-    trainer.extend(extensions.snapshot_object(Critic,
-        filename='Critic_snapshot_epoch_{.updater.epoch}.npz'), trigger=snapshot_interval)
-    trainer.extend(extensions.PrintReport(['epoch', 'Critic_loss',
-        'AE_loss', 'rec_loss']), trigger=display_interval)
+    trainer.extend(extensions.PrintReport(['epoch', 'AE_loss']),
+        trigger=display_interval)
     trainer.extend(extensions.ProgressBar())
-    trainer.extend(Visualizer.out_generated_image(AE, Critic, test1, test2, out),
+    trainer.extend(Visualizer.out_generated_image(AE, test1, test2, out),
         trigger=(1, 'epoch'))
     trainer.run()
     del trainer

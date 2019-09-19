@@ -47,14 +47,10 @@ def main():
     test = TransformDataset(test, transform)
     xp = cupy
     AE = Network.AE(n_dimz=args.n_dimz)
-    Critic = Network.Critic()
     
     AE.to_gpu()
-    Critic.to_gpu()
     load_AE = 'result/AE_snapshot_epoch_{}.npz'.format(args.snapshot)
-    load_Critic = 'result/Critic_snapshot_epoch_{}.npz'.format(args.snapshot)
     chainer.serializers.load_npz(load_AE, AE)
-    chainer.serializers.load_npz(load_Critic, Critic)
     label1 = 1
     label2 = 9
     test1 = [i[0] for i in test if(i[1]==label1)]
@@ -65,7 +61,7 @@ def main():
     for i in range(0,5):
         data1 = test1[i]
         data2 = test2[i]
-        y1, y2, yc, alpha, z1, z2 = AE(xp.array([data1]).astype(np.float32),
+        y1, y2, z1, z2 = AE(xp.array([data1]).astype(np.float32),
             xp.array([data2]).astype(np.float32))
         in1 = (data1*255).astype(np.uint8).reshape(28, 28)
         in2 = (data2*255).astype(np.uint8).reshape(28, 28)
