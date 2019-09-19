@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from PIL import Image
 import cupy
+from chainercv.datasets import TransformDataset
+from chainercv.transforms import resize
 
-import Network.mnist_net as Network
 
 def main():
     parser = argparse.ArgumentParser(description="Vanilla_AE")
@@ -19,6 +20,12 @@ def main():
     out = os.path.join('Pred', args.network, 'epoch_{}'.format(args.snapshot))
     os.makedirs(out, exist_ok=True)
 
+    if args.network=='conv':
+        import Network.mnist_conv as Network
+    elif args.network=='fl':
+        import Network.mnist_fl as Network
+    else:
+        raise Exception('Error!')
     def transform(in_data):
         img, label = in_data
         img = resize(img, (32, 32))
@@ -46,11 +53,11 @@ def main():
     _, test = mnist.get_mnist(withlabel=True, ndim=3)
     test = TransformDataset(test, transform)
     xp = cupy
-    AE = Network.AE(n_dimz=args.n_dimz)
+    AE = Network.AE(n_dimz=args.n_dimz, batchsize=args.batchsize)
     
     AE.to_gpu()
-    load_AE = 'result/AE_snapshot_epoch_{}.npz'.format(args.snapshot)
-    chainer.serializers.load_npz(load_AE, AE)
+    AE_path = os.path.join('result', args.network, 'AE_snapshot_epoch_{}.npz'.format(args.snapshot))
+    chainer.serializers.load_npz(AE_path, AE)
     label1 = 1
     label2 = 9
     test1 = [i[0] for i in test if(i[1]==label1)]
@@ -63,8 +70,8 @@ def main():
         data2 = test2[i]
         y1, y2, z1, z2 = AE(xp.array([data1]).astype(np.float32),
             xp.array([data2]).astype(np.float32))
-        in1 = (data1*255).astype(np.uint8).reshape(28, 28)
-        in2 = (data2*255).astype(np.uint8).reshape(28, 28)
+        in1 = (data1*255).astype(np.uint8).reshape(32, 32)
+        in2 = (data2*255).astype(np.uint8).reshape(32, 32)
         z_diff = (z2 - z1).data
         z_itp = z1.data#start point
 
@@ -73,7 +80,7 @@ def main():
             z_itp = xp.vstack((z_itp, z1.data+z_diff/10*j))
         for k in range(0,11):#端から座標を移動して画像を出力
             itp = AE(xp.copy(z_itp[k][None, ...]), z_itp[k], train=False)
-            itp_out = (itp.data*255).astype(np.uint8).reshape(28, 28)
+            itp_out = (itp.data*255).astype(np.uint8).reshape(32, 32)
             itp_list.append(chainer.cuda.to_cpu(itp_out))
         itp_list.append(in2)
 

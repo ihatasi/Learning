@@ -10,14 +10,16 @@ class AE(chainer.Chain):
         self.batchsize = batchsize
         super(AE, self).__init__()
         with self.init_scope():
-            self.conv1 = L.Convolution2D(None, 16, 4, 2, 1)
-            self.conv2 = L.Convolution2D(None, 32, 4, 2, 1)
-            self.conv3 = L.Convolution2D(None, 64, 4, 2, 1)
+            self.conv1 = L.Convolution2D(None, 16, 3, 1, 1)
+            self.conv2 = L.Convolution2D(None, 16, 4, 2, 1)
+            self.conv3 = L.Convolution2D(None, 32, 4, 2, 1)
+            self.conv4 = L.Convolution2D(None, 64, 4, 2, 1)
             self.conv_z = L.Linear(None, self.n_dimz)
             self.z_deconv = L.Linear(None, 64*4*4)
             self.deconv1 = L.Deconvolution2D(None, 32, 4, 2, 1)
             self.deconv2 = L.Deconvolution2D(None, 16, 4, 2, 1)
             self.deconv3 = L.Deconvolution2D(None, 1, 4, 2, 1)
+            self.deconv4 = L.Deconvolution2D(None, 1, 3, 1, 1)
 
     def __call__(self, x1, x2, train=True):
         if train:
@@ -32,39 +34,47 @@ class AE(chainer.Chain):
             h2 = F.relu(self.conv2(h2))
             h1 = F.relu(self.conv3(h1))
             h2 = F.relu(self.conv3(h2))
+            h1 = F.relu(self.conv4(h1))
+            h2 = F.relu(self.conv4(h2))
             h1 = self.conv_z(h1)
             h2 = self.conv_z(h2)
             c =  alpha*h1+(1.0-alpha)*h2
-            y1 = self.z_deconv(h1)
-            y2 = self.z_deconv(h2)
-            yc = self.z_deconv(c)
-            y1 = F.relu(self.deconv1(y1.reshape(-1, 64, 4, 4)))
-            y2 = F.relu(self.deconv1(y2.reshape(-1, 64, 4, 4)))
-            yc = F.relu(self.deconv1(yc.reshape(-1, 64, 4, 4)))
+            y1 = self.z_deconv(h1).reshape(-1, 64, 4, 4)
+            y2 = self.z_deconv(h2).reshape(-1, 64, 4, 4)
+            yc = self.z_deconv(c).reshape(-1, 64, 4, 4)
+            y1 = F.relu(self.deconv1(y1))
+            y2 = F.relu(self.deconv1(y2))
+            yc = F.relu(self.deconv1(yc))
             y1 = F.relu(self.deconv2(y1))
             y2 = F.relu(self.deconv2(y2))
             yc = F.relu(self.deconv2(yc))
-            y1 = self.deconv3(y1)
-            y2 = self.deconv3(y2)
-            yc = self.deconv3(yc)
+            y1 = F.relu(self.deconv3(y1))
+            y2 = F.relu(self.deconv3(y2))
+            yc = F.relu(self.deconv3(yc))
+            y1 = self.deconv4(y1)
+            y2 = self.deconv4(y2)
+            yc = self.deconv4(yc)
             return F.sigmoid(y1), F.sigmoid(y2), F.sigmoid(yc), alpha, h1, h2
         else:
             y = F.relu(self.z_deconv(x1)).reshape(-1, 64, 4, 4)
             y = F.relu(self.deconv1(y))
             y = F.relu(self.deconv2(y))
-            y = self.deconv3(y)
+            y = F.relu(self.deconv3(y))
+            y = self.deconv4(y)
             return F.sigmoid(y)
 
 class Critic(chainer.Chain):
     def __init__(self):
         super(Critic, self).__init__()
         with self.init_scope():
+            self.dis0 = L.Convolution2D(None, 16, 3, 2, 1)
             self.dis1 = L.Convolution2D(None, 16, 4, 2, 2)
             self.dis2 = L.Convolution2D(None, 32, 4, 2, 1)
             self.dis3 = L.Convolution2D(None, 64, 4, 2, 1)
             self.dis4 = L.Linear(None, 1)
     def __call__(self, x):
-        h = F.relu(self.dis1(x))
+        h = F.relu(self.dis0(x))
+        h = F.relu(self.dis1(h))
         h = F.relu(self.dis2(h))
         h = F.relu(self.dis3(h))
         h = self.dis4(h)

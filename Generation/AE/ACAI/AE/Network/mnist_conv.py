@@ -10,14 +10,14 @@ class AE(chainer.Chain):
         self.batchsize = batchsize
         super(AE, self).__init__()
         with self.init_scope():
-            self.conv1 = L.Convolution2D(None, 16, 4, 2, 1)
+            self.conv1 = L.Convolution2D(None, 16, 3, 1, 1)
             self.conv2 = L.Convolution2D(None, 32, 4, 2, 1)
             self.conv3 = L.Convolution2D(None, 64, 4, 2, 1)
-            self.conv_z = L.Convolution2D(None, self.n_dimz, 3, 1, 1)
-            self.z_deconv = L.Deconvolution2D(None, 64, 3, 1, 1)
+            self.conv_z = L.Convolution2D(None, self.n_dimz, 4, 2, 1)
+            self.z_deconv = L.Deconvolution2D(None, 64, 4, 2, 1)
             self.deconv1 = L.Deconvolution2D(None, 32, 4, 2, 1)
             self.deconv2 = L.Deconvolution2D(None, 16, 4, 2, 1)
-            self.deconv3 = L.Deconvolution2D(None, 1, 4, 2, 1)
+            self.deconv3 = L.Deconvolution2D(None, 1, 3, 1, 1)
 
     def __call__(self, x1, x2, train=True):
         if train:
