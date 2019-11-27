@@ -42,7 +42,6 @@ def main():
     print('')
     out = os.path.join('result', args.network)
     batchsize = args.batchsize
-    gpu_id = args.gpu
     max_epoch = args.epoch
 
     train_val, _ = mnist.get_mnist(withlabel=False, ndim=3)
@@ -64,8 +63,14 @@ def main():
     else:
         raise Exception('Error!')
 
-    AE = Network.AE(n_dimz=args.n_dimz, batchsize=args.batchsize)
+    Enc = Network.Encoder(n_dimz=args.n_dimz)
+    Dec = Network.Decoder(n_dimz=args.n_dimz)
     Critic = Network.Critic()
+    chainer.cuda.get_device(args.gpu).use()
+    Enc.to_gpu(args.gpu)
+    Dec.to_gpu(args.gpu)
+    Critic.to_gpu(args.gpu)
+
     train, valid = split_dataset_random(train_val, 50000, seed=0)
 
     #set iterator
@@ -78,13 +83,16 @@ def main():
         optimizer.setup(model)
         optimizer.add_hook(chainer.optimizer.WeightDecay(0.0001))
         return optimizer
-    opt_AE = make_optimizer(AE)
+    opt_Enc = make_optimizer(Enc)
+    opt_Dec = make_optimizer(Dec)
     opt_Critic = make_optimizer(Critic) 
     #trainer
     updater = Updater.ACAIUpdater(
-    model=(AE, Critic),
+    model=(Enc, Dec, Critic),
     iterator=train_iter,
-    optimizer={'AE':opt_AE, 'Critic':opt_Critic},
+    optimizer={'Enc':opt_Enc, 'Dec':opt_Dec, 'Critic':opt_Critic},
+    n_dimz = args.n_dimz,
+    net = args.network,
     device=args.gpu)
 
 
@@ -93,14 +101,20 @@ def main():
     trainer.extend(extensions.LogReport(log_name='log'))
     snapshot_interval = (args.snapshot, 'epoch')
     display_interval = (1, 'epoch')
-    trainer.extend(extensions.snapshot_object(AE,
-        filename='AE_snapshot_epoch_{.updater.epoch}.npz'), trigger=snapshot_interval)
+    trainer.extend(extensions.snapshot_object(Enc,
+        filename='Enc_snapshot_epoch_{.updater.epoch}.npz'),
+        trigger=snapshot_interval)
+    trainer.extend(extensions.snapshot_object(Dec,
+        filename='Dec_snapshot_epoch_{.updater.epoch}.npz'),
+        trigger=snapshot_interval)
     trainer.extend(extensions.snapshot_object(Critic,
-        filename='Critic_snapshot_epoch_{.updater.epoch}.npz'), trigger=snapshot_interval)
-    trainer.extend(extensions.PrintReport(['epoch', 'Critic_loss',
-        'AE_loss', 'rec_loss']), trigger=display_interval)
+        filename='Critic_snapshot_epoch_{.updater.epoch}.npz'),
+        trigger=snapshot_interval)
+    trainer.extend(extensions.PrintReport(['epoch', 'Critic_loss', 'rec_loss']),
+        trigger=display_interval)
     trainer.extend(extensions.ProgressBar())
-    trainer.extend(Visualizer.out_generated_image(AE, Critic, test1, test2, out),
+    trainer.extend(Visualizer.out_generated_image(Enc, Dec, Critic,
+        test1, test2, out),
         trigger=(1, 'epoch'))
     trainer.run()
     del trainer

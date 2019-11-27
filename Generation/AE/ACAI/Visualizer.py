@@ -7,7 +7,7 @@ from chainer import Variable
 import matplotlib.pyplot as plt
 import cupy
 
-def out_generated_image(AE, Critic, test1, test2, out):
+def out_generated_image(Enc, Dec, Critic, test1, test2, out):
     @chainer.training.make_extension()
     def plot_mnist_data(samples, trainer, out):
         pict = os.path.join(out, 'pict')
@@ -34,8 +34,10 @@ def out_generated_image(AE, Critic, test1, test2, out):
             data1 = test1[i]
             data2 = test2[i]
             with chainer.using_config('train', False):
-                y1, y2, yc, alpha, z1, z2 = AE(xp.array([data1]).astype(np.float32),
-                    xp.array([data2]).astype(np.float32))
+                z1 = Enc(xp.array([data1]).astype(np.float32))
+                z2 = Enc(xp.array([data2]).astype(np.float32))
+                y1 = Dec(z1)
+                y2 = Dec(z2)
             in1 = (data1*255).astype(np.uint8).reshape(32, 32)
             in2 = (data2*255).astype(np.uint8).reshape(32, 32)
             z_diff = (z2 - z1).data
@@ -46,7 +48,7 @@ def out_generated_image(AE, Critic, test1, test2, out):
                 z_itp = xp.vstack((z_itp, z1.data+z_diff/10*j))
             for k in range(0,11):#端から座標を移動して画像を出力
                 with chainer.using_config('train', False):
-                    itp = AE(xp.copy(z_itp[k][None, ...]), None, train=False)
+                    itp = Dec(xp.copy(z_itp[k][None, ...]))
                     itp = chainer.backends.cuda.to_cpu(itp.data)
                 itp_out = (itp*255).astype(np.uint8).reshape(32, 32)
                 itp_list.append(itp_out)

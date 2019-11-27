@@ -59,7 +59,7 @@ def main():
     AE_path = os.path.join('result', args.network, 'AE_snapshot_epoch_{}.npz'.format(args.snapshot))
     chainer.serializers.load_npz(AE_path, AE)
     label1 = 1
-    label2 = 9
+    label2 = 5
     test1 = [i[0] for i in test if(i[1]==label1)]
     test2 = [i[0] for i in test if(i[1]==label2)]
     test1 = test1[0:5]

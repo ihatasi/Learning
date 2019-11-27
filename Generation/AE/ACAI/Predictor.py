@@ -53,17 +53,22 @@ def main():
     _, test = mnist.get_mnist(withlabel=True, ndim=3)
     test = TransformDataset(test, transform)
     xp = cupy
-    AE = Network.AE(n_dimz=args.n_dimz, batchsize=args.batchsize)
+    Enc = Network.Encoder(n_dimz=args.n_dimz)
+    Dec = Network.Decoder(n_dimz=args.n_dimz)
     Critic = Network.Critic()
     
-    AE.to_gpu()
-    Critic.to_gpu()
-    AE_path = os.path.join('result', args.network, 'AE_snapshot_epoch_{}.npz'.format(args.snapshot))
+    chainer.cuda.get_device(args.gpu).use()
+    Enc.to_gpu(args.gpu)
+    Dec.to_gpu(args.gpu)
+    Critic.to_gpu(args.gpu)
+    Enc_path = os.path.join('result', args.network, 'Enc_snapshot_epoch_{}.npz'.format(args.snapshot))
+    Dec_path = os.path.join('result', args.network, 'Dec_snapshot_epoch_{}.npz'.format(args.snapshot))
     Critic_path = os.path.join('result', args.network, 'Critic_snapshot_epoch_{}.npz'.format(args.snapshot))
-    chainer.serializers.load_npz(AE_path, AE)
+    chainer.serializers.load_npz(Enc_path, Enc)
+    chainer.serializers.load_npz(Dec_path, Dec)
     chainer.serializers.load_npz(Critic_path, Critic)
     label1 = 1
-    label2 = 9
+    label2 = 5
     test1 = [i[0] for i in test if(i[1]==label1)]
     test2 = [i[0] for i in test if(i[1]==label2)]
     test1 = test1[0:5]
@@ -72,8 +77,11 @@ def main():
     for i in range(0,5):
         data1 = test1[i]
         data2 = test2[i]
-        y1, y2, yc, alpha, z1, z2 = AE(xp.array([data1]).astype(np.float32),
-            xp.array([data2]).astype(np.float32))
+        with chainer.using_config('train', False):
+            z1 = Enc(xp.array([data1]).astype(np.float32))
+            z2 = Enc(xp.array([data2]).astype(np.float32))
+            y1 = Dec(z1)
+            y2 = Dec(z2)
         in1 = (data1*255).astype(np.uint8).reshape(32, 32)
         in2 = (data2*255).astype(np.uint8).reshape(32, 32)
         z_diff = (z2 - z1).data
@@ -83,7 +91,8 @@ def main():
         for j in range(1, 11):#間の座標を出す
             z_itp = xp.vstack((z_itp, z1.data+z_diff/10*j))
         for k in range(0,11):#端から座標を移動して画像を出力
-            itp = AE(xp.copy(z_itp[k][None, ...]), z_itp[k], train=False)
+            with chainer.using_config('train', False):
+                itp = Dec(xp.copy(z_itp[k][None, ...]))
             itp_out = (itp.data*255).astype(np.uint8).reshape(32, 32)
             itp_list.append(chainer.cuda.to_cpu(itp_out))
         itp_list.append(in2)

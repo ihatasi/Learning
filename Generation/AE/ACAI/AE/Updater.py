@@ -16,7 +16,7 @@ class AEUpdater(chainer.training.updaters.StandardUpdater):
         batchsize = len(x1)
         loss = F.mean_squared_error(x1, y1)
         loss += F.mean_squared_error(x2, y2)
-        loss = loss/2
+        loss = loss
         chainer.report({'AE_loss': loss})
         return loss
 
