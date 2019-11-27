@@ -17,9 +17,9 @@ class Encoder(chainer.Chain):
             self.bn2 = L.BatchNormalization(32)
             self.bn3 = L.BatchNormalization(64)
     def __call__(self, x):
-        h = self.bn1(F.relu(self.conv1(x)))
-        h = self.bn2(F.relu(self.conv2(h)))
-        h = self.bn3(F.relu(self.conv3(h)))
+        h = F.relu(self.bn1(self.conv1(x)))
+        h = F.relu(self.bn2(self.conv2(h)))
+        h = F.relu(self.bn3(self.conv3(h)))
         h = self.conv_z(h)
         return h
 
@@ -35,9 +35,9 @@ class Decoder(chainer.Chain):
             self.bn2 = L.BatchNormalization(32)
             self.bn3 = L.BatchNormalization(16)
     def __call__(self, x):
-        h = self.bn1(F.relu(self.z_deconv(x)))
-        h = self.bn2(F.relu(self.deconv1(h)))
-        h = self.bn3(F.relu(self.deconv2(h)))
+        h = F.relu(self.bn1(self.z_deconv(x)))
+        h = F.relu(self.bn2(self.deconv1(h)))
+        h = F.relu(self.bn3(self.deconv2(h)))
         h = self.deconv3(h)
         return F.sigmoid(h)
 
@@ -56,9 +56,9 @@ class Critic(chainer.Chain):
             self.bn2 = L.BatchNormalization(32)
             self.bn3 = L.BatchNormalization(64)
     def __call__(self, x):
-        h = self.bn0(F.relu(self.dis0(x)))
-        h = self.bn1(F.relu(self.dis1(h)))
-        h = self.bn2(F.relu(self.dis2(h)))
-        h = self.bn3(F.relu(self.dis3(h)))
+        h = F.relu(self.bn0(self.dis0(x)))
+        h = F.relu(self.bn1(self.dis1(h)))
+        h = F.relu(self.bn2(self.dis2(h)))
+        h = F.relu(self.bn3(self.dis3(h)))
         h = self.dis4(h)
         return h
