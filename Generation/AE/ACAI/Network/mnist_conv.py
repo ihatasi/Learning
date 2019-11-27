@@ -61,4 +61,4 @@ class Critic(chainer.Chain):
         h = self.bn2(F.relu(self.dis2(h)))
         h = self.bn3(F.relu(self.dis3(h)))
         h = self.dis4(h)
-        return 0.5 - F.absolute(0.5 - F.sigmoid(h))
+        return h
